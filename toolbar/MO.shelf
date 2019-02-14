@@ -7,5 +7,6 @@
 
   <toolshelf name="MO_shelf" label="Movabl Object">
     <memberTool name="SimpleRBD"/>
+    <memberTool name="camera_rig_1"/>
   </toolshelf>
 </shelfDocument>
