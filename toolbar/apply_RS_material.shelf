@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shelfDocument>
+  <!-- This file contains definitions of shelves, toolbars, and tools.
+ It should not be hand-edited when it is being used by the application.
+ Note, that two definitions of the same element are not allowed in
+ a single file. -->
+
+  <tool name="apply_RS_material" label="apply_RS_material" icon="PLASMA_App">
+    <script scriptType="python"><![CDATA[import hou
+
+def main(**kwargs):
+
+
+        for curNode in hou.selectedNodes():
+                if curNode.type().name() == "geo" or curNode.type().name() == "instance":
+                        applyRSMaterial(curNode,kwargs['shiftclick'])
+
+
+def applyRSMaterial(node,modifier):
+
+        if modifier: # Shift Click: add Material inside the SOP as a matnework
+
+                if node.type().name() == "geo":
+                
+                        matnet = node.createNode('matnet',node_name="matnet",run_init_scripts=False)
+                        
+                        # Create and Connect RS Material Builder
+                        redshift_vopnet = matnet.createNode('redshift_vopnet',node_name=node.name(),run_init_scripts=True)
+                        rsmaterial = redshift_vopnet.createNode('redshift::Material')
+                        rsroot = hou.node(str(redshift_vopnet.path())+"/redshift_material1")
+                        rsroot.setFirstInput(rsmaterial)
+
+                        renderNode = node.displayNode()
+                        
+                        materialNode = node.createNode('material')
+                        materialNode.setFirstInput(renderNode)
+                        materialNode.setDisplayFlag(True)
+                        materialNode.setRenderFlag(True)
+
+                        matnet.moveToGoodPosition()
+                        materialNode.moveToGoodPosition()
+
+                        materialNode.parm('shop_materialpath1').set("../"+matnet.name()+"/"+redshift_vopnet.name())
+
+        else: # simply add to /mat
+
+                # Create and Connect RS Material Builder
+                redshift_vopnet = hou.node('/mat').createNode('redshift_vopnet',node_name=node.name(),run_init_scripts=True)
+                rsmaterial = redshift_vopnet.createNode('redshift::Material')
+                rsroot = hou.node(str(redshift_vopnet.path())+"/redshift_material1")
+                rsroot.setFirstInput(rsmaterial)
+                rsmaterial.moveToGoodPosition()
+
+                node.parm('shop_materialpath').set("/mat/"+redshift_vopnet.name())
+
+main(**kwargs)]]></script>
+  </tool>
+</shelfDocument>
